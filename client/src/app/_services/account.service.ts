@@ -15,7 +15,7 @@ export class AccountService {
 
   constructor(private http: HttpClient) { }
 
-  login(model: any){
+  login(model: any) {
     return this.http.post(this.baseUrl + 'account/login', model).pipe(
       map((response: User) =>{
         const user = response;
@@ -26,7 +26,7 @@ export class AccountService {
     )
   }
 
-  register(model: any){
+  register(model: any) {
     return this.http.post(this.baseUrl + 'account/register', model).pipe(
       map((user: User) => {
         if(user){
@@ -36,13 +36,20 @@ export class AccountService {
     )
   }
 
-  setCurrentUser(user: User){
+  setCurrentUser(user: User) {
+    user.roles = [];
+    const roles = this.getDecodedToken(user.token).role;
+    Array.isArray(roles) ? user.roles = roles : user.roles.push(roles);
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUserSource.next(user);
   }
 
-  logout(){
+  logout() {
     localStorage.removeItem('user');
     this.currentUserSource.next(null);
+  }
+
+  getDecodedToken(token) {
+    return JSON.parse(atob(token.split('.')[1]));
   }
 }
